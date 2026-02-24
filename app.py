@@ -128,7 +128,7 @@ def main():
 
             st.markdown("#### 💊 Clinical Status")
             ak_map = {"No": 0, "Yes": 1}; Acute_kidney_injury = ak_map[st.selectbox("Acute Kidney Injury", list(ak_map.keys()))]
-            sed_map = {"No": 0, "Yes": 1}; Sedative_and_analgesic_drugs = sed_map[st.selectbox("Sedatives", list(sed_map.keys()))]
+            sed_map = {"No": 0, "Yes": 1}; Sedative_and_analgesic_drugs = sed_map[st.selectbox("Sedative and analgesic drugs", list(sed_map.keys()))]
             vaso_map = {"No": 0, "Yes": 1}; Vasopressin = vaso_map[st.selectbox("Vasopressin", list(vaso_map.keys()))]
             steroid_map = {"No": 0, "Yes": 1}; Glucocorticoids = steroid_map[st.selectbox("Glucocorticoids", list(steroid_map.keys()))]
             
@@ -302,3 +302,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
