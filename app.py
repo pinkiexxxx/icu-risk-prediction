@@ -7,10 +7,9 @@ import matplotlib.pyplot as plt
 import xgboost as xgb 
 import os 
 
-# 强制使用 Agg 后端
 matplotlib.use('Agg')
 
-# ==================== 1. 全局配置 & CSS ====================
+# ==================== 1. 全局配置 ====================
 st.set_page_config(
     page_title="ICU Mortality Risk Prediction",
     page_icon="⚕️",
@@ -71,7 +70,7 @@ st.markdown("""
         border: 1px solid #e9ecef;
         box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
-    /* 【修改点】图表标题：添加蓝色竖杠 */
+    /* 图表标题 */
     .chart-title {
         font-size: 1.4rem;
         font-weight: 700;
@@ -95,13 +94,11 @@ def load_model():
 
 classifier1 = load_model()
 
-# 定义模型需要的 10 个特征名称 (必须与训练时完全一致)
 FEATURE_NAMES = [
     "Acute_kidney_injury", "Sedative_and_analgesic_drugs", "Vasopressin", "Glucocorticoids", 
     "Age", "Weight", "RDW", "Heart_rate", "Respiratory_rate", "Chloride"
 ]
 
-# 定义真实的训练集基准值 (用于兜底校准)
 REAL_BASE_SCORE = 0.23351955
 
 def main():
@@ -185,27 +182,21 @@ def main():
         # 3. SHAP 分析
         with st.spinner("Generating consistent interpretations..."):
             
-            # ==================== A. 核心修复：加载并筛选背景数据 ====================
             background_file = "background_data.csv"
             bg_data = None
             
             if os.path.exists(background_file):
-                try:
-                    # 1. 读取完整的 CSV (58列)
+                try: 
                     raw_bg = pd.read_csv(background_file)
                     
-                    # 2. 【关键步骤】只保留模型需要的 10 列！
-                    # 这一步解决了 "expected: 10, got 58" 的错误
                     bg_data = raw_bg[FEATURE_NAMES]
                     
                     # st.success("✅ Successfully loaded and filtered real background data.")
                     
                 except KeyError as e:
                     st.error(f"Error: CSV file is missing required columns: {e}")
-                    # 回退到随机
                     bg_data = None
             
-            # 如果加载失败或文件不存在，回退到随机数据
             if bg_data is None:
                 if not os.path.exists(background_file):
                     st.warning(f"⚠️ '{background_file}' not found. Using random simulation.")
@@ -237,12 +228,8 @@ def main():
             current_base = float(current_base)
 
             # E. 校准 (Calibration)
-            # 因为使用了真实的背景数据，这里的 bias 应该非常小
-            # 但为了保证 100% 的数学严谨性，我们还是做一次微小的闭环平差
             bias = current_base - REAL_BASE_SCORE
             
-            # 如果偏差过大 (>5%)，说明 CSV 数据分布和训练集差异大，不强制校准，保留 CSV 的真实基准
-            # 如果偏差小，说明是采样误差，强制校准回模型参数
             if abs(bias) < 0.05:
                 final_base = REAL_BASE_SCORE
                 final_values = shap_vals + (bias / len(FEATURE_NAMES))
@@ -276,7 +263,6 @@ def main():
                 for txt in ax.texts:
                     if "f(x)" in txt.get_text(): txt.set_visible(False)
                     
-                    # 放大预测值
                     try:
                         float(txt.get_text())
                         txt.set_fontsize(22)
