@@ -139,7 +139,7 @@ def main():
     st.markdown("""
     <div class="main-header">
         <h1>28-day Mortality Risk Prediction</h1>
-        <p style="opacity: 0.9">ICU Patients with COPD combined with PAH</p>
+        <p style="opacity: 0.9">ICU Patients with COPD complicated by PH</p>
     </div>
     """, unsafe_allow_html=True)
 
